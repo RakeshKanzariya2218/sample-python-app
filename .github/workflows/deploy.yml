@@ -1,36 +1,61 @@
-ssh -i ~/.ssh/id_ed25519 ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-  set -e
+name: Deploy Flask App to EC2
 
-  cd ~
+on:
+  push:
+    branches:
+      - main
 
-  # Clone repo if not already cloned
-  if [ ! -d "sample-python-app/.git" ]; then
-    git clone https://github.com/RakeshKanzariya2218/sample-python-app.git
-  fi
+jobs:
+  deploy:
+    name: Deploy Flask App via SSH
+    runs-on: ubuntu-latest
 
-  # Go to repo folder
-  cd sample-python-app
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  # Pull latest changes
-  git pull origin main
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-  # Create virtual environment if it doesn't exist
-  if [ ! -d "venv" ]; then
-    python3 -m venv venv
-  fi
-  source venv/bin/activate
+      - name: Deploy to EC2 and restart Flask app
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
 
-  # Install/update dependencies
-  pip install --upgrade pip
-  pip install -r requirements.txt
+            cd ~
 
-  # Kill any running instances of app.py
-  pkill -f "python3 app.py" || true
-  sleep 2
+            # Clone repo if not already cloned
+            if [ ! -d "sample-python-app/.git" ]; then
+              git clone https://github.com/RakeshKanzariya2218/sample-python-app.git
+            fi
 
-  # Run the app in background with nohup
-  nohup python3 app.py > app.log 2>&1 &
+            # Go to repo folder
+            cd sample-python-app
 
-  sleep 3
-  tail -n 20 app.log
-EOF
+            # Pull latest changes
+            git pull origin main
+
+            # Create virtual environment if it doesn't exist
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            source venv/bin/activate
+
+            # Install/update dependencies
+            pip install --upgrade pip
+            pip install -r requirements.txt
+
+            # Kill any running instances of app.py
+            pkill -f "python3 app.py" || true
+            sleep 2
+
+            # Run the app in background with nohup
+            nohup python3 app.py > app.log 2>&1 &
+
+            sleep 3
+            tail -n 20 app.log
+          EOF
