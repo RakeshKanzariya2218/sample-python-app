@@ -22,7 +22,7 @@ def create_app(config_object=None):
     # Root health-check
     @app.route('/')
     def index():
-        return jsonify({"status": "ok", "msg": "Welcome to the API!"})
+        return jsonify({"status": "ok", "msg": "Welcome , Rakesh kanzariya !"})
 
     return app
 
