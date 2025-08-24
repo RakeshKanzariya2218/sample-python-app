@@ -28,6 +28,11 @@ jobs:
 
             cd ~
 
+            # Clone repo if not already cloned
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/RakeshKanzariya2218/sample-python-app.git
+            fi
+
             # Pull the latest changes
             git pull origin main
 
@@ -48,7 +53,6 @@ jobs:
             # Run the app in background with nohup
             nohup python3 app.py > app.log 2>&1 &
 
-            # Wait a few seconds then show last 20 lines of log to verify start
             sleep 3
             tail -n 20 app.log
           EOF
