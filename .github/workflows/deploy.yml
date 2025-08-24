@@ -26,7 +26,7 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
 
-            cd ~/sample-python-app
+            cd ~
 
             # Pull the latest changes
             git pull origin main
