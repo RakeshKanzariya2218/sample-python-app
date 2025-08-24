@@ -34,7 +34,7 @@ mkdir ~/flask-app
     create file in your repositppry
    .github/workflows/deploy.yml
    {
-  name: Deploy Flask App to EC2
+ name: Deploy Flask App to EC2
 
 on:
   push:
@@ -47,40 +47,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
-        chmod 600 ~/.ssh/id_ed25519
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-    - name: Deploy to EC2 and restart Flask app
-      run: |
-        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          cd ~/sample-python-app
+      - name: Deploy to EC2 and restart Flask app
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
 
-          # Pull the latest changes
-          git pull origin main
+            cd ~
 
-          # Activate or create virtual environment
-          if [ ! -d "venv" ]; then
-            python3 -m venv venv
-          fi
-          source venv/bin/activate
+            # Clone repo if not already cloned
+            if [ ! -d "sample-python-app/.git" ]; then
+              git clone https://github.com/RakeshKanzariya2218/sample-python-app.git
+            fi
 
-          # Install/update dependencies
-          pip install --upgrade pip
-          pip install -r requirements.txt
+            # Go to repo folder
+            cd sample-python-app
 
-          # Kill any previous app instance (safely)
-          pkill -f "python3 app.py" || true
+            # Pull latest changes
+            git pull origin main
 
-          # Run the app in background
-          nohup python3 app.py > app.log 2>&1 &
-        EOF
+            # Create virtual environment if it doesn't exist
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            source venv/bin/activate
+
+            # Install/update dependencies
+             pip install --upgrade pip --break-system-packages
+            pip install -r requirements.txt --break-system-packages
+
+            # Kill any running instances of app.py
+            pkill -f "python3 app.py" || true
+            sleep 2
+
+            # Run the app in background with nohup
+            nohup python3 app.py > app.log 2>&1 &
+
+            sleep 3
+            tail -n 20 app.log
+          EOF
+          }
 
 8. your server public ip:5000 hit in browser running application fine 
 
