@@ -19,7 +19,7 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519             ## add your secret with private key in git-repo secrets 
         chmod 600 ~/.ssh/id_ed25519
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts       ## add server ip as host on secrets
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts       ## add server ip as host on secrets  -- also your server inside the authorised key contain pub ssh key ehich inside the owner ubuntu 
 
     - name: Deploy to EC2 and restart Flask app
       run: |
