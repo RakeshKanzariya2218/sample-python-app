@@ -34,7 +34,7 @@ mkdir ~/flask-app
     create file in your repositppry
    .github/workflows/deploy.yml
    {
-   name: Deploy Flask App to EC2
+  name: Deploy Flask App to EC2
 
 on:
   push:
@@ -53,13 +53,13 @@ jobs:
     - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa                  ### add your ssh private key 
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts           ## add ec2 publis ip as HOST 
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
     - name: Deploy to EC2 and restart Flask app
       run: |
-        ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
           cd ~/sample-python-app
 
           # Pull the latest changes
@@ -81,7 +81,7 @@ jobs:
           # Run the app in background
           nohup python3 app.py > app.log 2>&1 &
         EOF
-}
+
 8. your server public ip:5000 hit in browser running application fine 
 
 
