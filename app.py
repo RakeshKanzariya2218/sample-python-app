@@ -24,7 +24,7 @@ def create_app(config_object=None):
     def index():
         return jsonify({"status": "ok", "msg": "Welcome , Rakesh kanzariya !"})
 
-    return app
+    return app rakesh 
 
 
 if __name__ == '__main__':
